@@ -3,6 +3,7 @@ import { DM_Sans, JetBrains_Mono, Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { Navbar } from '@/components/layout/Navbar';
 import { AuthProvider } from '@/components/providers/AuthProvider';
+import { getBaseAppUrl } from '@/lib/app-url';
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -35,6 +36,7 @@ export const metadata: Metadata = {
     'real estate help India',
     'finance guidance India',
   ],
+  metadataBase: new URL(getBaseAppUrl()),
   title: {
     default: 'Vyarah AI BuildDesk',
     template: '%s | Vyarah AI BuildDesk',

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/firebase-admin';
+import { normalizeUsagePlan } from '@/lib/plans';
 import { verifyRequestUser } from '@/lib/server-auth';
 
 export const runtime = 'nodejs';
@@ -65,7 +66,10 @@ export async function POST(req: NextRequest) {
       {
         createdAt,
         email: authUser.email,
-        plan: snapshot.data()?.plan ?? 'free',
+        onboardingCompleted: snapshot.data()?.onboardingCompleted ?? false,
+        persona: snapshot.data()?.persona ?? null,
+        plan: normalizeUsagePlan(snapshot.data()?.plan),
+        preferredDesk: snapshot.data()?.preferredDesk ?? null,
       },
       { merge: true }
     );
@@ -75,7 +79,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       createdAt: user?.createdAt ?? createdAt,
       email: user?.email ?? authUser.email,
-      plan: user?.plan ?? 'free',
+      onboardingCompleted: user?.onboardingCompleted ?? false,
+      persona: user?.persona ?? null,
+      plan: normalizeUsagePlan(user?.plan),
+      preferredDesk: user?.preferredDesk ?? null,
       userId: authUser.userId,
     });
   } catch (error) {

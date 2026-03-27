@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Share2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Message } from '@/types';
@@ -11,6 +11,7 @@ interface MessageBubbleProps {
   domainColor: string;
   domainName: string;
   isStreaming?: boolean;
+  onShare?: () => Promise<void>;
 }
 
 export function MessageBubble({
@@ -18,8 +19,10 @@ export function MessageBubble({
   domainColor,
   domainName,
   isStreaming,
+  onShare,
 }: MessageBubbleProps) {
   const [copied, setCopied] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
   const isUser = message.role === 'user';
 
   const handleCopy = async () => {
@@ -29,6 +32,20 @@ export function MessageBubble({
       setTimeout(() => setCopied(false), 2000);
     } catch {
       console.error('Failed to copy message');
+    }
+  };
+
+  const handleShare = async () => {
+    if (!onShare) {
+      return;
+    }
+
+    try {
+      await onShare();
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {
+      console.error('Failed to share message');
     }
   };
 
@@ -83,7 +100,27 @@ export function MessageBubble({
           </div>
 
           {!isStreaming && message.content ? (
-            <div className="mt-3 flex justify-end opacity-0 transition-opacity group-hover:opacity-100">
+            <div className="mt-3 flex justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+              {onShare ? (
+                <button
+                  type="button"
+                  title="Copy shareable link"
+                  className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1 text-[12px] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-text-primary)]"
+                  onClick={handleShare}
+                >
+                  {shareCopied ? (
+                    <>
+                      <Check className="h-3 w-3" />
+                      Link copied!
+                    </>
+                  ) : (
+                    <>
+                      <Share2 className="h-3 w-3" />
+                      Share
+                    </>
+                  )}
+                </button>
+              ) : null}
               <button
                 type="button"
                 className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1 text-[12px] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-text-primary)]"

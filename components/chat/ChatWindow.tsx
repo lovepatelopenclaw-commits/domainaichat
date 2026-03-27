@@ -2,13 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { Message, DomainId } from '@/types';
+import { Message, DomainId, UsagePlan } from '@/types';
 import { DOMAINS } from '@/lib/domains';
+import { canUploadFiles } from '@/lib/plans';
 import { fetchWithAuth } from '@/lib/client-api';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { EmptyState } from './EmptyState';
 import { InputBar } from './InputBar';
 import { MessageBubble } from './MessageBubble';
+import { SoftLeadPrompt } from './SoftLeadPrompt';
 import { SuggestedQuestions } from './SuggestedQuestions';
 import { getDomainVisual } from './domain-theme';
 
@@ -18,7 +20,10 @@ interface ChatWindowProps {
   onConversationSaved?: (conversationId: string | null) => void;
   onUsageLimitReached?: () => void;
   resetToken: number;
-  usagePlan?: 'guest' | 'free' | 'pro';
+  usagePlan?: UsagePlan;
+  initialStarterQuestion?: string | null;
+  welcomeMessage?: string | null;
+  workspaceToken?: string | null;
 }
 
 export function ChatWindow({
@@ -28,12 +33,17 @@ export function ChatWindow({
   onUsageLimitReached,
   resetToken,
   usagePlan = 'guest',
+  initialStarterQuestion,
+  welcomeMessage,
+  workspaceToken,
 }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
   const [loadingConversation, setLoadingConversation] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(conversationId);
+  const [guestSessionId, setGuestSessionId] = useState<string | null>(null);
+  const [softLeadState, setSoftLeadState] = useState<'hidden' | 'prompt' | 'saved' | 'skipped'>('hidden');
   const bottomRef = useRef<HTMLDivElement>(null);
   const domainConfig = DOMAINS[domain];
   const domainVisual = getDomainVisual(domain);
@@ -99,6 +109,44 @@ export function ChatWindow({
     }
   }, [followUpQuestions, isStreaming, messages]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const existingSessionId = window.sessionStorage.getItem('vyarah_guest_session_id');
+    const nextSessionId = existingSessionId || crypto.randomUUID();
+    window.sessionStorage.setItem('vyarah_guest_session_id', nextSessionId);
+    setGuestSessionId(nextSessionId);
+
+    const captureState = window.sessionStorage.getItem(`vyarah_guest_capture_${nextSessionId}`);
+
+    if (captureState === 'saved' || captureState === 'skipped') {
+      setSoftLeadState(captureState);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (initialStarterQuestion && messages.length === 0 && !isStreaming) {
+      void sendMessage(initialStarterQuestion);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialStarterQuestion]);
+
+  useEffect(() => {
+    if (user || softLeadState === 'saved' || softLeadState === 'skipped') {
+      return;
+    }
+
+    const assistantAnswers = messages.filter(
+      (message) => message.role === 'assistant' && message.content.trim().length > 0
+    ).length;
+
+    if (assistantAnswers >= 2) {
+      setSoftLeadState('prompt');
+    }
+  }, [messages, softLeadState, user]);
+
   const sendMessage = async (content: string) => {
     if (isStreaming || !content.trim()) {
       return;
@@ -136,6 +184,7 @@ export function ChatWindow({
             content: message.content,
             role: message.role,
           })),
+          workspaceToken,
         }),
         headers: {
           'Content-Type': 'application/json',
@@ -237,6 +286,76 @@ export function ChatWindow({
     sendMessage(question);
   };
 
+  const handleSaveGuestLead = async (email: string) => {
+    if (!guestSessionId) {
+      throw new Error('Guest session missing');
+    }
+
+    const latestAssistantMessage = [...messages]
+      .reverse()
+      .find((message) => message.role === 'assistant' && message.content.trim());
+
+    const response = await fetch('/api/guest-leads', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        approximateQuestionCount: messages.filter((message) => message.role === 'user').length,
+        desk: domain,
+        email,
+        lastAnswer: latestAssistantMessage?.content ?? null,
+        sessionId: guestSessionId,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Unable to save lead');
+    }
+
+    window.sessionStorage.setItem(`vyarah_guest_capture_${guestSessionId}`, 'saved');
+    setSoftLeadState('saved');
+  };
+
+  const handleSkipGuestLead = () => {
+    if (guestSessionId) {
+      window.sessionStorage.setItem(`vyarah_guest_capture_${guestSessionId}`, 'skipped');
+    }
+
+    setSoftLeadState('skipped');
+  };
+
+  const handleShare = async (messageId: string) => {
+    const messageIndex = messages.findIndex((message) => message.id === messageId);
+    const answerMessage = messages[messageIndex];
+    const questionMessage = [...messages.slice(0, messageIndex)]
+      .reverse()
+      .find((message) => message.role === 'user');
+
+    if (!answerMessage || !questionMessage) {
+      throw new Error('Unable to create share link');
+    }
+
+    const response = await fetch('/api/share', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        answer: answerMessage.content,
+        desk: domain,
+        question: questionMessage.content,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Unable to create share link');
+    }
+
+    const data = await response.json();
+    await navigator.clipboard.writeText(data.url);
+  };
+
   const showSuggested = !loadingConversation && messages.length === 0;
 
   return (
@@ -256,6 +375,11 @@ export function ChatWindow({
             </div>
           ) : (
             <div className="w-full space-y-5 py-6">
+              {welcomeMessage && messages.length === 0 ? (
+                <div className="max-w-[min(100%,56rem)] border border-[var(--color-border)] bg-white/40 px-4 py-3 text-[14px] text-[var(--color-text-secondary)]">
+                  {welcomeMessage}
+                </div>
+              ) : null}
               {messages.map((message) => (
                 <MessageBubble
                   key={message.id}
@@ -267,8 +391,27 @@ export function ChatWindow({
                     message.id === messages[messages.length - 1]?.id &&
                     message.role === 'assistant'
                   }
+                  onShare={
+                    message.role === 'assistant' && message.content.trim()
+                      ? () => handleShare(message.id)
+                      : undefined
+                  }
                 />
               ))}
+
+              {softLeadState === 'prompt' ? (
+                <SoftLeadPrompt
+                  color={domainVisual.color}
+                  onSave={handleSaveGuestLead}
+                  onSkip={handleSkipGuestLead}
+                />
+              ) : null}
+
+              {softLeadState === 'saved' ? (
+                <div className="max-w-[min(100%,56rem)] border border-[var(--color-border)] bg-white/40 px-4 py-3 text-[14px] text-[var(--color-text-primary)]">
+                  Got it - your answers are saved.
+                </div>
+              ) : null}
 
               {isStreaming &&
               messages[messages.length - 1]?.role === 'assistant' &&
@@ -332,7 +475,7 @@ export function ChatWindow({
             disabled={isStreaming || loadingConversation}
             placeholder="Ask Vyarah AI anything..."
             color={domainVisual.color}
-            showAttachment={usagePlan === 'pro'}
+            showAttachment={canUploadFiles(usagePlan)}
           />
           <p className="mt-2 text-center text-[11px] text-[var(--color-text-muted)]">
             Built for India. Verify important decisions with a qualified professional.

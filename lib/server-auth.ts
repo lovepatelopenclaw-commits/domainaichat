@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { DecodedIdToken } from 'firebase-admin/auth';
 import { getAdminAuth, getAdminDb } from '@/lib/firebase-admin';
 import { UsagePlan } from '@/types';
+import { normalizeUsagePlan } from '@/lib/plans';
 
 export interface AuthenticatedUser {
   email: string | null;
@@ -36,7 +37,7 @@ export async function verifyRequestUser(
   const snapshot = await userRef.get();
   const existingData = snapshot.exists ? snapshot.data() : undefined;
   const createdAt = existingData?.createdAt ?? new Date().toISOString();
-  const plan = (existingData?.plan as UsagePlan | undefined) ?? 'free';
+  const plan = normalizeUsagePlan(existingData?.plan as string | undefined);
 
   if (!snapshot.exists) {
     await userRef.set({

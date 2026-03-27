@@ -44,10 +44,10 @@ function LoginContent() {
         }
 
         setGoogleLoading(true);
-        await syncAuthenticatedUser(result.user);
+        const profile = await syncAuthenticatedUser(result.user);
 
         if (!ignore) {
-          router.push(next);
+          router.push(profile.onboardingCompleted ? next : '/onboarding');
         }
       } catch (error) {
         if (!ignore) {
@@ -77,8 +77,8 @@ function LoginContent() {
 
     try {
       const result = await signInWithPopup(currentAuth, currentGoogleProvider);
-      await syncAuthenticatedUser(result.user);
-      router.push(next);
+      const profile = await syncAuthenticatedUser(result.user);
+      router.push(profile.onboardingCompleted ? next : '/onboarding');
     } catch (error) {
       if (shouldUseGoogleRedirectFallback(error)) {
         await signInWithRedirect(currentAuth, currentGoogleProvider);
@@ -104,8 +104,8 @@ function LoginContent() {
 
     try {
       const result = await signInWithEmailAndPassword(currentAuth, email, password);
-      await syncAuthenticatedUser(result.user);
-      router.push(next);
+      const profile = await syncAuthenticatedUser(result.user);
+      router.push(profile.onboardingCompleted ? next : '/onboarding');
     } catch (error) {
       setError(getAuthErrorMessage(error, 'Unable to sign in right now. Please try again.'));
       setLoading(false);

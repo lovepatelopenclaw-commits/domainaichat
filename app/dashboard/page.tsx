@@ -16,6 +16,7 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import { getDomainVisual } from '@/components/chat/domain-theme';
 import { Conversation, UsageSummary } from '@/types';
 import { DOMAINS } from '@/lib/domains';
+import { canAccessWhatsapp, canAccessWhitelabel, getPlanLabel } from '@/lib/plans';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -76,7 +77,9 @@ export default function DashboardPage() {
     );
   }
 
-  const isPro = usage?.plan === 'pro';
+  const planLabel = usage ? getPlanLabel(usage.plan) : 'Personal';
+  const canSeeWhitelabel = usage ? canAccessWhitelabel(usage.plan) : false;
+  const canSeeWhatsapp = usage ? canAccessWhatsapp(usage.plan) : false;
   const usageLabel = usage
     ? usage.limit === null
       ? `${usage.current} today`
@@ -102,9 +105,9 @@ export default function DashboardPage() {
           <div className="flex flex-wrap items-center gap-3">
             <div className="inline-flex items-center gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-[13px] font-medium text-[var(--color-text-primary)]">
               <Crown className="h-4 w-4 text-[var(--color-accent)]" />
-              {isPro ? 'Pro Plan' : 'Free Plan'}
+              {planLabel} Plan
             </div>
-            {!isPro ? (
+            {usage?.plan === 'guest' || usage?.plan === 'personal' ? (
               <Link
                 href="/pricing"
                 className="inline-flex items-center rounded-[var(--radius-sm)] border border-[var(--color-accent)] px-4 py-2 text-[13px] font-medium text-[var(--color-accent)] transition-colors hover:bg-[var(--color-accent-soft)]"
@@ -200,9 +203,9 @@ export default function DashboardPage() {
                   }}
                 />
               </div>
-              {!isPro ? (
+              {usage?.plan === 'guest' || usage?.plan === 'personal' ? (
                 <p className="mt-3 text-[13px] text-[var(--color-text-secondary)]">
-                  Upgrade to Pro when you need unlimited questions and a steadier daily workflow.
+                  Move up when you need team workflows, APIs, or white-label controls.
                 </p>
               ) : null}
             </div>
@@ -216,7 +219,7 @@ export default function DashboardPage() {
             <div className="mt-8 space-y-3 text-[14px]">
               <div className="flex items-center justify-between border-b border-white/10 pb-3">
                 <span className="text-white/72">Plan</span>
-                <span>{isPro ? 'Pro' : 'Free'}</span>
+                <span>{planLabel}</span>
               </div>
               <div className="flex items-center justify-between border-b border-white/10 pb-3">
                 <span className="text-white/72">Saved chats</span>
@@ -227,12 +230,30 @@ export default function DashboardPage() {
                 <span>BuildDesk</span>
               </div>
             </div>
-            <Link
-              href="/chat"
-              className="mt-8 inline-flex items-center rounded-[var(--radius-sm)] border border-[var(--color-accent)] px-4 py-2 text-[13px] font-medium text-[var(--color-accent)] transition-colors hover:bg-white/6"
-            >
-              Open chat <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/chat"
+                className="inline-flex items-center rounded-[var(--radius-sm)] border border-[var(--color-accent)] px-4 py-2 text-[13px] font-medium text-[var(--color-accent)] transition-colors hover:bg-white/6"
+              >
+                Open chat <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+              {canSeeWhatsapp ? (
+                <Link
+                  href="/dashboard/integrations/whatsapp"
+                  className="inline-flex items-center rounded-[var(--radius-sm)] border border-white/18 px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-white/6"
+                >
+                  WhatsApp
+                </Link>
+              ) : null}
+              {canSeeWhitelabel ? (
+                <Link
+                  href="/dashboard/whitelabel"
+                  className="inline-flex items-center rounded-[var(--radius-sm)] border border-white/18 px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-white/6"
+                >
+                  White-label
+                </Link>
+              ) : null}
+            </div>
           </section>
         </div>
 

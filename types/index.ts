@@ -1,4 +1,27 @@
-export type DomainId = 'ca-tax' | 'legal' | 'medical' | 'real-estate' | 'business' | 'finance';
+export type DomainId =
+  | 'ca-tax'
+  | 'legal'
+  | 'medical'
+  | 'real-estate'
+  | 'business'
+  | 'finance';
+
+export type UsagePlan =
+  | 'guest'
+  | 'personal'
+  | 'professional'
+  | 'business'
+  | 'white-label';
+
+export type OnboardingPersona =
+  | 'salaried-professional'
+  | 'business-owner'
+  | 'ca-lawyer-doctor'
+  | 'student'
+  | 'investor'
+  | 'other';
+
+export type TeamMemberRole = 'admin' | 'viewer';
 
 export interface Domain {
   id: DomainId;
@@ -11,6 +34,7 @@ export interface Domain {
   darkBg: string;
   systemPrompt: string;
   suggestedQuestions: string[];
+  disclaimer?: string;
 }
 
 export type MessageRole = 'user' | 'assistant' | 'system';
@@ -22,6 +46,7 @@ export interface Message {
   content: string;
   domain?: DomainId;
   createdAt: string;
+  shareId?: string | null;
 }
 
 export interface Conversation {
@@ -33,9 +58,16 @@ export interface Conversation {
   updatedAt: string;
 }
 
-export type UsagePlan = 'guest' | 'free' | 'pro';
+export interface UserPreferences {
+  city?: string | null;
+  onboardingCompleted?: boolean;
+  onboardingEmailQueuedAt?: string | null;
+  onboardingEmailSentAt?: string | null;
+  persona?: OnboardingPersona | null;
+  preferredDesk?: DomainId | null;
+}
 
-export interface UserProfile {
+export interface UserProfile extends UserPreferences {
   id: string;
   email: string;
   plan: UsagePlan;
@@ -54,6 +86,7 @@ export interface ChatRequest {
   domain: DomainId;
   conversationId?: string;
   documentContext?: string;
+  workspaceToken?: string;
 }
 
 export interface UsageSummary {
@@ -62,4 +95,90 @@ export interface UsageSummary {
   limit: number | null;
   remaining: number | null;
   date: string;
+}
+
+export interface SharedAnswerRecord {
+  id: string;
+  answer: string;
+  createdAt: string;
+  desk: DomainId;
+  question: string;
+  sharerUserId?: string | null;
+}
+
+export interface SoftLeadRecord {
+  id: string;
+  approximateQuestionCount: number;
+  createdAt: string;
+  desk: DomainId;
+  email: string;
+  emailSentAt?: string | null;
+  followUpDueAt: string;
+  lastAnswer?: string | null;
+  sessionId: string;
+  status: 'pending' | 'sent' | 'skipped';
+}
+
+export interface WhiteLabelDeskConfig {
+  enabled: boolean;
+  id: DomainId;
+  name: string;
+  welcomeMessage: string;
+}
+
+export interface WhiteLabelDocument {
+  id: string;
+  name: string;
+  status: 'processing' | 'ready';
+  storagePath?: string | null;
+  uploadedAt: string;
+}
+
+export interface WhiteLabelTeamMember {
+  email: string;
+  role: TeamMemberRole;
+  status: 'active' | 'invited';
+}
+
+export interface WhiteLabelBranding {
+  brandName: string;
+  customDomain: string;
+  logoUrl?: string | null;
+  primaryColor: string;
+}
+
+export interface WhiteLabelConfig {
+  analyticsWindowDays: number;
+  branding: WhiteLabelBranding;
+  createdAt: string;
+  deskConfigs: WhiteLabelDeskConfig[];
+  embedToken: string;
+  knowledgeBase: WhiteLabelDocument[];
+  ownerUserId: string;
+  updatedAt: string;
+  userManagement: WhiteLabelTeamMember[];
+}
+
+export interface PublicWhiteLabelWorkspace {
+  branding: WhiteLabelBranding;
+  deskConfigs: WhiteLabelDeskConfig[];
+  embedToken: string;
+}
+
+export interface WhatsAppConnection {
+  createdAt: string;
+  phoneNumber: string;
+  plan: UsagePlan;
+  provider: 'twilio';
+  status: 'pending' | 'verified';
+  verifiedAt?: string | null;
+  ownerUserId: string;
+}
+
+export interface WhatsAppThreadMessage {
+  body: string;
+  createdAt: string;
+  direction: 'inbound' | 'outbound';
+  desk: DomainId;
+  phoneNumber: string;
 }

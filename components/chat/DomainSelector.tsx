@@ -1,16 +1,18 @@
 'use client';
 
-import { DomainId } from '@/types';
+import { Domain, DomainId } from '@/types';
 import { DOMAIN_LIST } from '@/lib/domains';
 import { getDomainVisual } from './domain-theme';
 
 interface DomainSelectorProps {
+  domains?: Domain[];
   selected: DomainId;
   onSelect: (domain: DomainId) => void;
   variant?: 'grid' | 'list' | 'compact';
 }
 
 export function DomainSelector({
+  domains = DOMAIN_LIST,
   selected,
   onSelect,
   variant = 'grid',
@@ -18,7 +20,7 @@ export function DomainSelector({
   if (variant === 'compact') {
     return (
       <div className="flex flex-wrap gap-2">
-        {DOMAIN_LIST.map((domain) => {
+        {domains.map((domain) => {
           const visual = getDomainVisual(domain.id);
           const isSelected = selected === domain.id;
 
@@ -47,7 +49,7 @@ export function DomainSelector({
   if (variant === 'list') {
     return (
       <div className="space-y-1">
-        {DOMAIN_LIST.map((domain) => {
+        {domains.map((domain) => {
           const visual = getDomainVisual(domain.id);
           const isSelected = selected === domain.id;
 
@@ -82,7 +84,7 @@ export function DomainSelector({
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {DOMAIN_LIST.map((domain) => {
+      {domains.map((domain) => {
         const visual = getDomainVisual(domain.id);
         const isSelected = selected === domain.id;
 

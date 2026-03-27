@@ -17,6 +17,8 @@ export const DOMAINS: Record<DomainId, Domain> = {
       'I work from home as a freelancer. What deductions can I claim?',
       'I sold mutual funds this year. How is capital gains calculated?',
     ],
+    disclaimer:
+      'BuildDesk provides AI-generated tax guidance only. It is not a substitute for advice from a qualified CA.',
     systemPrompt: `${VYARAH_IDENTITY}
 
 [DOMAIN: CA & TAX]
@@ -61,6 +63,8 @@ CA for advice specific to your situation."`,
       'How do I register a rent agreement in India?',
       'How do I file a consumer complaint online?',
     ],
+    disclaimer:
+      'BuildDesk provides AI-generated legal guidance only. It is not a substitute for advice from a practicing advocate.',
     systemPrompt: `${VYARAH_IDENTITY}
 
 [DOMAIN: LEGAL]
@@ -96,6 +100,8 @@ practicing advocate for advice on your specific case."`,
       'What is the difference between viral and bacterial fever?',
       'My TSH report shows 6.2. Is this normal?',
     ],
+    disclaimer:
+      'BuildDesk provides AI-generated medical guidance only. It is not a substitute for diagnosis or treatment by a qualified doctor.',
     systemPrompt: `${VYARAH_IDENTITY}
 
 [DOMAIN: MEDICAL]
@@ -130,6 +136,8 @@ diagnosis and treatment."`,
       'Can I get a home loan if I am self-employed?',
       'What is RERA and how does it protect me as a buyer?',
     ],
+    disclaimer:
+      'BuildDesk provides AI-generated real-estate guidance only. It is not a substitute for professional legal or financial advice.',
     systemPrompt: `${VYARAH_IDENTITY}
 
 [DOMAIN: REAL ESTATE]
@@ -165,6 +173,8 @@ Gujarat, Maharashtra, Delhi, Karnataka.`,
       'Do I need GST registration if revenue is under Rs20L?',
       'What should a co-founder agreement include?',
     ],
+    disclaimer:
+      'BuildDesk provides AI-generated business guidance only. It is not a substitute for professional legal, tax, or strategic advice.',
     systemPrompt: `${VYARAH_IDENTITY}
 
 [DOMAIN: BUSINESS & STARTUP]
@@ -201,6 +211,8 @@ the user's situation.`,
       'How does SIP work and is it better than FD?',
       'What is ELSS and how does it save tax?',
     ],
+    disclaimer:
+      'BuildDesk provides AI-generated financial guidance only. It is not a substitute for advice from a SEBI-registered advisor.',
     systemPrompt: `${VYARAH_IDENTITY}
 
 [DOMAIN: GENERAL FINANCE]

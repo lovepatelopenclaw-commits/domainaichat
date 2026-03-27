@@ -11,7 +11,12 @@ import { DOMAINS } from '@/lib/domains';
 import { getProtectedIdentityResponse } from '@/lib/identity-response';
 import { verifyRequestUser } from '@/lib/server-auth';
 import { isUsageExceeded } from '@/lib/usage';
-import { DomainId, UsagePlan } from '@/types';
+import {
+  buildWhiteLabelSystemPrompt,
+  getWhiteLabelConfigByEmbedToken,
+  getWhiteLabelKnowledgeBaseContext,
+} from '@/lib/whitelabel';
+import { ChatRequest, UsagePlan } from '@/types';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -20,12 +25,7 @@ export async function POST(req: NextRequest) {
   try {
     const authUser = await verifyRequestUser(req);
     const body = await req.json();
-    const { messages, domain, documentContext, conversationId } = body as {
-      messages: { role: 'user' | 'assistant'; content: string }[];
-      domain: DomainId;
-      documentContext?: string;
-      conversationId?: string;
-    };
+    const { messages, domain, documentContext, conversationId, workspaceToken } = body as ChatRequest;
 
     // Validate domain
     const domainConfig = DOMAINS[domain];
@@ -135,6 +135,20 @@ export async function POST(req: NextRequest) {
       nextGuestCount = guestCount + 1;
     }
 
+    try {
+      const adminDb = getAdminDb();
+      await adminDb.collection('questionEvents').add({
+        createdAt: new Date().toISOString(),
+        domain,
+        plan,
+        question: lastUserMessage.content,
+        userId: authUser?.userId ?? null,
+        workspaceToken: workspaceToken?.trim() || null,
+      });
+    } catch {
+      // Analytics should never block the primary chat flow.
+    }
+
     // Validate API key is configured
     if (!process.env.OPENROUTER_API_KEY && !process.env.NVIDIA_NIM_API_KEY) {
       return NextResponse.json(
@@ -148,6 +162,35 @@ export async function POST(req: NextRequest) {
       content: m.content,
     }));
     const protectedIdentityResponse = getProtectedIdentityResponse(lastUserMessage.content);
+    let systemPrompt = domainConfig.systemPrompt;
+    let combinedDocumentContext = documentContext?.trim() || '';
+
+    if (workspaceToken?.trim()) {
+      const workspaceConfig = await getWhiteLabelConfigByEmbedToken(workspaceToken);
+
+      if (!workspaceConfig) {
+        return NextResponse.json(
+          { error: 'This branded workspace is unavailable right now.' },
+          { status: 404 }
+        );
+      }
+
+      const workspaceDesk = workspaceConfig.deskConfigs.find((desk) => desk.id === domain);
+
+      if (!workspaceDesk?.enabled) {
+        return NextResponse.json(
+          { error: 'This desk is not enabled in the selected workspace.' },
+          { status: 403 }
+        );
+      }
+
+      systemPrompt = buildWhiteLabelSystemPrompt(workspaceConfig, domain);
+
+      const whiteLabelKnowledgeBase = await getWhiteLabelKnowledgeBaseContext(workspaceConfig);
+      combinedDocumentContext = [combinedDocumentContext, whiteLabelKnowledgeBase]
+        .filter(Boolean)
+        .join('\n\n');
+    }
 
     // Stream response
     let stream: Awaited<ReturnType<typeof streamChat>>['stream'] | null = null;
@@ -155,8 +198,8 @@ export async function POST(req: NextRequest) {
       try {
         const result = await streamChat({
           messages: chatMessages,
-          systemPrompt: domainConfig.systemPrompt,
-          documentContext,
+          systemPrompt,
+          documentContext: combinedDocumentContext || undefined,
         });
         stream = result.stream;
       } catch (error) {

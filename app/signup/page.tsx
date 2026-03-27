@@ -41,10 +41,10 @@ export default function SignupPage() {
         }
 
         setGoogleLoading(true);
-        await syncAuthenticatedUser(result.user);
+        const profile = await syncAuthenticatedUser(result.user);
 
         if (!ignore) {
-          router.push('/chat');
+          router.push(profile.onboardingCompleted ? '/chat' : '/onboarding');
         }
       } catch (error) {
         if (!ignore) {
@@ -74,8 +74,8 @@ export default function SignupPage() {
 
     try {
       const result = await signInWithPopup(currentAuth, currentGoogleProvider);
-      await syncAuthenticatedUser(result.user);
-      router.push('/chat');
+      const profile = await syncAuthenticatedUser(result.user);
+      router.push(profile.onboardingCompleted ? '/chat' : '/onboarding');
     } catch (error) {
       if (shouldUseGoogleRedirectFallback(error)) {
         await signInWithRedirect(currentAuth, currentGoogleProvider);
@@ -108,8 +108,8 @@ export default function SignupPage() {
         });
       }
 
-      await syncAuthenticatedUser(result.user);
-      router.push('/chat');
+      const profile = await syncAuthenticatedUser(result.user);
+      router.push(profile.onboardingCompleted ? '/chat' : '/onboarding');
     } catch (error) {
       setError(getAuthErrorMessage(error, 'Unable to create your account right now. Please try again.'));
       setLoading(false);

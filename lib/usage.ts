@@ -2,8 +2,10 @@ import { UsagePlan } from '@/types';
 
 export const USAGE_LIMITS: Record<UsagePlan, number> = {
   guest: 3,
-  free: 10,
-  pro: Infinity,
+  personal: Infinity,
+  professional: Infinity,
+  business: Infinity,
+  'white-label': Infinity,
 };
 
 export interface UsageCheckResult {

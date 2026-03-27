@@ -3,12 +3,19 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, LogIn, LogOut, Plus, Settings } from 'lucide-react';
-import { Conversation, DomainId } from '@/types';
+import { DOMAINS } from '@/lib/domains';
 import { fetchWithAuth } from '@/lib/client-api';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { BrandMark } from '@/components/brand/BrandMark';
 import { DomainSelector } from '@/components/chat/DomainSelector';
 import { getDomainVisual } from '@/components/chat/domain-theme';
+import { getPlanLabel } from '@/lib/plans';
+import {
+  Conversation,
+  DomainId,
+  PublicWhiteLabelWorkspace,
+  UsagePlan,
+} from '@/types';
 
 interface SidebarProps {
   activeConversationId: string | null;
@@ -19,7 +26,8 @@ interface SidebarProps {
   onSelectConversation: (conversation: Conversation) => void;
   refreshToken: number;
   selectedDomain: DomainId;
-  usagePlan?: 'guest' | 'free' | 'pro';
+  usagePlan?: UsagePlan;
+  workspace?: PublicWhiteLabelWorkspace | null;
 }
 
 export function Sidebar({
@@ -32,6 +40,7 @@ export function Sidebar({
   onSelectConversation,
   refreshToken,
   usagePlan = 'guest',
+  workspace = null,
 }: SidebarProps) {
   const { signOutUser, user } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -78,7 +87,15 @@ export function Sidebar({
   );
 
   const userInitial = (user?.displayName || user?.email || 'V').trim().charAt(0).toUpperCase();
-  const planLabel = usagePlan === 'pro' ? 'Pro' : usagePlan === 'free' ? 'Free' : 'Guest';
+  const planLabel = getPlanLabel(usagePlan);
+  const brandName = workspace?.branding.brandName ?? 'Vyarah BuildDesk';
+  const sidebarDomains = workspace
+    ? workspace.deskConfigs.map((desk) => ({
+        ...DOMAINS[desk.id],
+        name: desk.name,
+        shortName: desk.name,
+      }))
+    : undefined;
 
   return (
     <>
@@ -94,12 +111,22 @@ export function Sidebar({
         <div className="border-b border-[#2c2c2c] p-5">
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 items-start gap-3">
-              <BrandMark size={32} />
+              {workspace?.branding.logoUrl ? (
+                <img
+                  src={workspace.branding.logoUrl}
+                  alt={brandName}
+                  className="h-8 w-8 object-contain"
+                />
+              ) : (
+                <BrandMark size={32} />
+              )}
               <div className="min-w-0">
                 <div className="text-[15px] font-semibold tracking-[-0.02em] text-white">
-                  Vyarah
+                  {workspace ? brandName : 'Vyarah'}
                 </div>
-                <div className="mt-1 text-[11px] text-[#9d978f]">AI BuildDesk</div>
+                <div className="mt-1 text-[11px] text-[#9d978f]">
+                  {workspace ? 'White-label workspace' : 'AI BuildDesk'}
+                </div>
               </div>
             </div>
             <button
@@ -115,7 +142,12 @@ export function Sidebar({
         <div className="border-b border-[#2c2c2c] px-5 py-4">
           <div>
             <div className="eyebrow-label mb-3">Domain</div>
-            <DomainSelector selected={selectedDomain} onSelect={onDomainChange} variant="list" />
+            <DomainSelector
+              domains={sidebarDomains}
+              selected={selectedDomain}
+              onSelect={onDomainChange}
+              variant="list"
+            />
           </div>
 
           <button
