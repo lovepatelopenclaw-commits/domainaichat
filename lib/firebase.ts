@@ -12,15 +12,24 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const isBrowser = typeof window !== 'undefined';
+export const isFirebaseClientConfigured = Object.values(firebaseConfig).every(
+  (value) => typeof value === 'string' && value.trim().length > 0
+);
 
-export const auth = (isBrowser ? getAuth(app) : null) as Auth;
-export const db = (isBrowser ? getFirestore(app) : null) as Firestore;
-export const storage = (isBrowser ? getStorage(app) : null) as FirebaseStorage;
-export const googleProvider = new GoogleAuthProvider();
+const app =
+  isBrowser && isFirebaseClientConfigured
+    ? getApps().length === 0
+      ? initializeApp(firebaseConfig)
+      : getApps()[0]
+    : null;
 
-googleProvider.setCustomParameters({
+export const auth = (app ? getAuth(app) : null) as Auth | null;
+export const db = (app ? getFirestore(app) : null) as Firestore | null;
+export const storage = (app ? getStorage(app) : null) as FirebaseStorage | null;
+export const googleProvider = app ? new GoogleAuthProvider() : null;
+
+googleProvider?.setCustomParameters({
   prompt: 'select_account',
 });
 

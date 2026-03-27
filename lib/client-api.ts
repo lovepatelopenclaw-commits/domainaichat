@@ -20,7 +20,7 @@ export async function fetchWithAuth(
   input: RequestInfo | URL,
   init: RequestInit = {}
 ) {
-  const token = auth.currentUser ? await auth.currentUser.getIdToken() : undefined;
+  const token = auth?.currentUser ? await auth.currentUser.getIdToken() : undefined;
 
   return fetch(input, {
     ...init,

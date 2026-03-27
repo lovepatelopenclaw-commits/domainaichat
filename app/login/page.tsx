@@ -9,6 +9,10 @@ import { auth, googleProvider } from '@/lib/firebase';
 import { syncAuthenticatedUser } from '@/lib/client-api';
 import { getAuthErrorMessage, shouldUseGoogleRedirectFallback } from '@/lib/auth-errors';
 import { BrandMark } from '@/components/brand/BrandMark';
+import { isFirebaseClientConfigured } from '@/lib/firebase';
+
+const FIREBASE_UNAVAILABLE_MESSAGE =
+  'Sign-in is temporarily unavailable because Firebase is not configured on this deployment yet.';
 
 function LoginContent() {
   const [email, setEmail] = useState('');
@@ -23,11 +27,17 @@ function LoginContent() {
   const next = searchParams.get('next') || '/chat';
 
   useEffect(() => {
+    if (!auth) {
+      setError(FIREBASE_UNAVAILABLE_MESSAGE);
+      return;
+    }
+
+    const currentAuth = auth;
     let ignore = false;
 
     async function completeRedirectLogin() {
       try {
-        const result = await getRedirectResult(auth);
+        const result = await getRedirectResult(currentAuth);
 
         if (!result?.user || ignore) {
           return;
@@ -55,16 +65,23 @@ function LoginContent() {
   }, [next, router]);
 
   const handleGoogleLogin = async () => {
+    if (!auth || !googleProvider) {
+      setError(FIREBASE_UNAVAILABLE_MESSAGE);
+      return;
+    }
+
+    const currentAuth = auth;
+    const currentGoogleProvider = googleProvider;
     setGoogleLoading(true);
     setError('');
 
     try {
-      const result = await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(currentAuth, currentGoogleProvider);
       await syncAuthenticatedUser(result.user);
       router.push(next);
     } catch (error) {
       if (shouldUseGoogleRedirectFallback(error)) {
-        await signInWithRedirect(auth, googleProvider);
+        await signInWithRedirect(currentAuth, currentGoogleProvider);
         return;
       }
 
@@ -75,11 +92,18 @@ function LoginContent() {
 
   const handleEmailLogin = async (event: React.FormEvent) => {
     event.preventDefault();
+
+    if (!auth) {
+      setError(FIREBASE_UNAVAILABLE_MESSAGE);
+      return;
+    }
+
+    const currentAuth = auth;
     setLoading(true);
     setError('');
 
     try {
-      const result = await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(currentAuth, email, password);
       await syncAuthenticatedUser(result.user);
       router.push(next);
     } catch (error) {
@@ -155,7 +179,7 @@ function LoginContent() {
             <button
               type="button"
               onClick={handleGoogleLogin}
-              disabled={googleLoading}
+              disabled={googleLoading || !isFirebaseClientConfigured}
               className="inline-flex h-11 w-full items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white px-4 text-[14px] font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-accent-soft)] disabled:opacity-60"
             >
               {googleLoading ? (
@@ -215,7 +239,7 @@ function LoginContent() {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !isFirebaseClientConfigured}
                 className="inline-flex h-11 w-full items-center justify-center rounded-[var(--radius-sm)] bg-[var(--color-text-primary)] px-4 text-[14px] font-medium text-white transition-colors hover:bg-[var(--color-accent)] disabled:opacity-60"
               >
                 {loading ? 'Signing in...' : 'Sign in'}
