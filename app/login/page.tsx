@@ -141,7 +141,7 @@ function LoginContent() {
 
           <blockquote className="max-w-md border-l border-[#3a352f] pl-5">
             <p className="font-display text-[30px] leading-[1.15] text-white">
-              “It feels closer to working with a thoughtful assistant than wrestling with another dashboard.”
+              &ldquo;It feels closer to working with a thoughtful assistant than wrestling with another dashboard.&rdquo;
             </p>
             <footer className="mt-4 text-[13px] text-[#a59f97]">
               Bengaluru consultant

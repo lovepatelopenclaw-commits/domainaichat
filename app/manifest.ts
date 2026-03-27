@@ -9,12 +9,12 @@ export default function manifest(): MetadataRoute.Manifest {
     icons: [
       {
         sizes: '512x512',
-        src: '/vyarah-logo.png',
+        src: '/icon',
         type: 'image/png',
       },
       {
         sizes: '192x192',
-        src: '/vyarah-logo.png',
+        src: '/apple-icon',
         type: 'image/png',
       },
     ],

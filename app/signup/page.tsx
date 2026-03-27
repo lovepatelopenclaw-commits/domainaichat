@@ -145,7 +145,7 @@ export default function SignupPage() {
 
           <blockquote className="max-w-md border-l border-[#3a352f] pl-5">
             <p className="font-display text-[30px] leading-[1.15] text-white">
-              “The interface feels measured. It lets the answer do the talking.”
+              &ldquo;The interface feels measured. It lets the answer do the talking.&rdquo;
             </p>
             <footer className="mt-4 text-[13px] text-[#a59f97]">
               Ahmedabad founder

@@ -14,7 +14,7 @@ const MANAGEABLE_PLANS: UsagePlan[] = [
 ];
 
 function getAdminEmails() {
-  return (process.env.UPAYIQ_ADMIN_EMAILS ?? '')
+  return (process.env.VYARAH_ADMIN_EMAILS ?? '')
     .split(',')
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean);

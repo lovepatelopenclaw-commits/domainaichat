@@ -85,7 +85,7 @@ export default function OpenGraphImage() {
                 textTransform: 'uppercase',
               }}
             >
-              upayiq.tech
+              vyarah.com
             </div>
           </div>
         </div>

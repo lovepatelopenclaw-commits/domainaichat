@@ -28,10 +28,6 @@ export const metadata: Metadata = {
   },
   category: 'technology',
   description: SITE_DESCRIPTION,
-  icons: {
-    apple: '/vyarah-logo.png',
-    icon: '/vyarah-logo.png',
-  },
   keywords: SITE_KEYWORDS,
   metadataBase: new URL(getBaseAppUrl()),
   openGraph: {

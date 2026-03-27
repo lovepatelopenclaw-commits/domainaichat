@@ -396,7 +396,7 @@ export default function DashboardPage() {
             </>
           ) : (
             <div className="mt-6 rounded-[var(--radius-sm)] border border-dashed border-[var(--color-border)] px-4 py-4 text-[14px] leading-7 text-[var(--color-text-secondary)]">
-              Add your email to the `UPAYIQ_ADMIN_EMAILS` environment variable to unlock one-click plan controls for this account.
+              Add your email to the `VYARAH_ADMIN_EMAILS` environment variable to unlock one-click plan controls for this account.
             </div>
           )}
         </section>
