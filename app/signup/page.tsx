@@ -22,10 +22,10 @@ export default function SignupPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const firebaseUnavailable = !auth || !isFirebaseClientConfigured;
 
   useEffect(() => {
     if (!auth) {
-      setError(FIREBASE_UNAVAILABLE_MESSAGE);
       return;
     }
 
@@ -173,17 +173,17 @@ export default function SignupPage() {
               </p>
             </div>
 
-            {error ? (
+            {error || firebaseUnavailable ? (
               <div className="mb-5 flex items-start gap-2 rounded-[var(--radius-sm)] border border-[#f3d5d5] bg-[#fff5f5] px-3 py-3 text-[13px] text-[#b42318]">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>{error}</span>
+                <span>{error || (firebaseUnavailable ? FIREBASE_UNAVAILABLE_MESSAGE : '')}</span>
               </div>
             ) : null}
 
             <button
               type="button"
               onClick={handleGoogleSignup}
-              disabled={googleLoading || !isFirebaseClientConfigured}
+              disabled={googleLoading || firebaseUnavailable}
               className="inline-flex h-11 w-full items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white px-4 text-[14px] font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-accent-soft)] disabled:opacity-60"
             >
               {googleLoading ? (
@@ -260,7 +260,7 @@ export default function SignupPage() {
 
               <button
                 type="submit"
-                disabled={loading || !isFirebaseClientConfigured}
+                disabled={loading || firebaseUnavailable}
                 className="inline-flex h-11 w-full items-center justify-center rounded-[var(--radius-sm)] bg-[var(--color-text-primary)] px-4 text-[14px] font-medium text-white transition-colors hover:bg-[var(--color-accent)] disabled:opacity-60"
               >
                 {loading ? 'Creating account...' : 'Create account'}

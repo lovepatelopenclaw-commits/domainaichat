@@ -37,7 +37,7 @@ export function canUploadFiles(plan: UsagePlan) {
   return plan !== 'guest';
 }
 
-export function canAccessShare(plan: UsagePlan) {
+export function canAccessShare() {
   return true;
 }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Menu, Plus } from 'lucide-react';
@@ -19,19 +19,37 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { normalizeUsagePlan } from '@/lib/plans';
 
 export function ChatClient() {
-  const [selectedDomain, setSelectedDomain] = useState<DomainId>('ca-tax');
+  const [manualSelectedDomain, setManualSelectedDomain] = useState<DomainId | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
   const [resetToken, setResetToken] = useState(0);
   const [usagePlan, setUsagePlan] = useState<UsagePlan>('guest');
-  const [welcomeMessage, setWelcomeMessage] = useState<string | null>(null);
-  const [starterQuestion, setStarterQuestion] = useState<string | null>(null);
+  const [profilePreferredDesk, setProfilePreferredDesk] = useState<DomainId | null>(null);
   const [workspace, setWorkspace] = useState<PublicWhiteLabelWorkspace | null>(null);
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const workspaceToken = searchParams.get('workspace');
+  const requestedDesk = searchParams.get('desk');
+  const starterQuestion = searchParams.get('starter');
+  const shouldShowWelcome = searchParams.get('welcome') === '1';
+  const workspaceEnabledDeskIds = workspace?.deskConfigs.map((desk) => desk.id) ?? null;
+  const selectedDomain = useMemo(() => {
+    const requestedDomain =
+      requestedDesk && requestedDesk in DOMAINS ? (requestedDesk as DomainId) : null;
+    const preferredDomain = profilePreferredDesk && profilePreferredDesk in DOMAINS
+      ? profilePreferredDesk
+      : null;
+    const candidate =
+      manualSelectedDomain ?? requestedDomain ?? preferredDomain ?? 'ca-tax';
+
+    if (!workspaceEnabledDeskIds || workspaceEnabledDeskIds.includes(candidate)) {
+      return candidate;
+    }
+
+    return workspaceEnabledDeskIds[0] ?? 'ca-tax';
+  }, [manualSelectedDomain, profilePreferredDesk, requestedDesk, workspaceEnabledDeskIds]);
 
   const activeDeskConfig = workspace?.deskConfigs.find((desk) => desk.id === selectedDomain);
   const domainConfig = activeDeskConfig
@@ -139,8 +157,8 @@ export function ChatClient() {
 
       const data = await response.json();
 
-      if (!ignore && !searchParams.get('desk') && data.preferredDesk && data.preferredDesk in DOMAINS) {
-        setSelectedDomain(data.preferredDesk as DomainId);
+      if (!ignore && !requestedDesk && data.preferredDesk && data.preferredDesk in DOMAINS) {
+        setProfilePreferredDesk(data.preferredDesk as DomainId);
       }
     }
 
@@ -149,52 +167,11 @@ export function ChatClient() {
     return () => {
       ignore = true;
     };
-  }, [searchParams, user]);
+  }, [requestedDesk, user]);
 
-  useEffect(() => {
-    const desk = searchParams.get('desk');
-    const starter = searchParams.get('starter');
-    const welcome = searchParams.get('welcome');
-
-    if (desk && desk in DOMAINS) {
-      setSelectedDomain(desk as DomainId);
-    }
-
-    setStarterQuestion(starter || null);
-
-    if (welcome) {
-      setWelcomeMessage("Welcome to BuildDesk. Ask anything - we'll keep up.");
-      return;
-    }
-
-    if (!workspaceToken) {
-      setWelcomeMessage(null);
-    }
-  }, [searchParams, workspaceToken]);
-
-  useEffect(() => {
-    if (!workspace) {
-      return;
-    }
-
-    const enabledDeskIds = workspace.deskConfigs.map((desk) => desk.id);
-
-    if (!enabledDeskIds.includes(selectedDomain)) {
-      setSelectedDomain(enabledDeskIds[0] ?? 'ca-tax');
-    }
-  }, [selectedDomain, workspace]);
-
-  useEffect(() => {
-    if (!workspace) {
-      return;
-    }
-
-    const workspaceDesk = workspace.deskConfigs.find((desk) => desk.id === selectedDomain);
-
-    if (workspaceDesk?.welcomeMessage) {
-      setWelcomeMessage(workspaceDesk.welcomeMessage);
-    }
-  }, [selectedDomain, workspace]);
+  const welcomeMessage =
+    activeDeskConfig?.welcomeMessage ??
+    (shouldShowWelcome ? "Welcome to BuildDesk. Ask anything - we'll keep up." : null);
 
   const handleNewChat = () => {
     setActiveConversationId(null);
@@ -203,14 +180,14 @@ export function ChatClient() {
   };
 
   const handleDomainChange = (domain: DomainId) => {
-    setSelectedDomain(domain);
+    setManualSelectedDomain(domain);
     setActiveConversationId(null);
     setResetToken((current) => current + 1);
     setSidebarOpen(false);
   };
 
   const handleConversationSelected = (conversation: Conversation) => {
-    setSelectedDomain(conversation.domain);
+    setManualSelectedDomain(conversation.domain);
     setActiveConversationId(conversation.id);
     setSidebarOpen(false);
   };

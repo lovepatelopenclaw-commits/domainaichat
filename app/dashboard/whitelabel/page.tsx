@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import QRCode from 'qrcode';
 import { fetchWithAuth } from '@/lib/client-api';
 import { useAuth } from '@/components/providers/AuthProvider';
-import { DOMAIN_LIST } from '@/lib/domains';
 import { WhiteLabelConfig } from '@/types';
 
 type Analytics = {
@@ -225,7 +224,10 @@ export default function WhiteLabelDashboardPage() {
               </label>
             </div>
             {config.branding.logoUrl ? (
-              <img src={config.branding.logoUrl} alt="Uploaded logo" className="mt-4 h-12 object-contain" />
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={config.branding.logoUrl} alt="Uploaded logo" className="mt-4 h-12 object-contain" />
+              </>
             ) : null}
             <p className="mt-4 text-[13px] text-[var(--color-text-secondary)]">
               Point your DNS CNAME to Vercel after saving the custom domain field.
@@ -386,7 +388,12 @@ export default function WhiteLabelDashboardPage() {
                 </Link>
               </div>
               <div className="border border-[var(--color-border)] bg-[var(--color-bg)] p-4">
-                {qrCodeUrl ? <img src={qrCodeUrl} alt="QR code" className="h-[180px] w-[180px]" /> : null}
+                {qrCodeUrl ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={qrCodeUrl} alt="QR code" className="h-[180px] w-[180px]" />
+                  </>
+                ) : null}
               </div>
             </div>
           </section>

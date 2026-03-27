@@ -7,6 +7,7 @@ import {
   ArrowRight,
   Clock3,
   Crown,
+  Lock,
   MessageSquare,
   Sparkles,
   TrendingUp,
@@ -14,15 +15,19 @@ import {
 import { fetchWithAuth } from '@/lib/client-api';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { getDomainVisual } from '@/components/chat/domain-theme';
-import { Conversation, UsageSummary } from '@/types';
+import { Conversation, UsagePlan, UsageSummary } from '@/types';
 import { DOMAINS } from '@/lib/domains';
 import { canAccessWhatsapp, canAccessWhitelabel, getPlanLabel } from '@/lib/plans';
+import { getUsageLimit } from '@/lib/usage';
 
 export default function DashboardPage() {
   const router = useRouter();
   const { loading, user } = useAuth();
   const [usage, setUsage] = useState<UsageSummary | null>(null);
   const [recentChats, setRecentChats] = useState<Conversation[]>([]);
+  const [canManageOwnPlan, setCanManageOwnPlan] = useState(false);
+  const [planActionLoading, setPlanActionLoading] = useState<UsagePlan | null>(null);
+  const [planActionMessage, setPlanActionMessage] = useState('');
 
   useEffect(() => {
     if (!loading && !user) {
@@ -52,12 +57,20 @@ export default function DashboardPage() {
         const conversationData = await conversationsResponse.json();
         setRecentChats((conversationData.conversations ?? []).slice(0, 6));
       }
+
+      const accountPlanResponse = await fetchWithAuth('/api/account/plan');
+
+      if (!ignore && accountPlanResponse.ok) {
+        const accountPlanData = await accountPlanResponse.json();
+        setCanManageOwnPlan(Boolean(accountPlanData.canManageOwnPlan));
+      }
     }
 
     loadDashboardData().catch(() => {
       if (!ignore) {
         setUsage(null);
         setRecentChats([]);
+        setCanManageOwnPlan(false);
       }
     });
 
@@ -85,6 +98,42 @@ export default function DashboardPage() {
       ? `${usage.current} today`
       : `${usage.current}/${usage.limit} today`
     : 'Loading...';
+
+  async function handlePlanUpgrade(nextPlan: UsagePlan) {
+    setPlanActionLoading(nextPlan);
+    setPlanActionMessage('');
+
+    const response = await fetchWithAuth('/api/account/plan', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ plan: nextPlan }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      setPlanActionMessage(data.error ?? 'Unable to update your account plan right now.');
+      setPlanActionLoading(null);
+      return;
+    }
+
+    setUsage((current) =>
+      current
+        ? {
+            ...current,
+            limit: Number.isFinite(getUsageLimit(nextPlan)) ? getUsageLimit(nextPlan) : null,
+            plan: nextPlan,
+            remaining: Number.isFinite(getUsageLimit(nextPlan))
+              ? Math.max(getUsageLimit(nextPlan) - current.current, 0)
+              : null,
+          }
+        : current
+    );
+    setPlanActionMessage(`This account is now on the ${getPlanLabel(nextPlan)} plan.`);
+    setPlanActionLoading(null);
+  }
 
   return (
     <div className="flex-1 bg-[var(--color-bg)]">
@@ -311,6 +360,45 @@ export default function DashboardPage() {
               })
             )}
           </div>
+        </section>
+
+        <section className="mt-8 surface-card p-7">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="font-display text-[28px] leading-none text-[var(--color-text-primary)]">
+                Plan controls
+              </h2>
+              <p className="mt-3 max-w-[42rem] text-[14px] leading-7 text-[var(--color-text-secondary)]">
+                Use this to move your signed-in account to a higher plan. This is an owner tool, not a customer billing flow.
+              </p>
+            </div>
+            <Lock className="h-5 w-5 text-[var(--color-accent)]" />
+          </div>
+
+          {canManageOwnPlan ? (
+            <>
+              <div className="mt-6 flex flex-wrap gap-3">
+                {(['personal', 'professional', 'business', 'white-label'] as UsagePlan[]).map((plan) => (
+                  <button
+                    key={plan}
+                    type="button"
+                    onClick={() => void handlePlanUpgrade(plan)}
+                    disabled={planActionLoading !== null || usage?.plan === plan}
+                    className="inline-flex min-h-11 items-center rounded-[var(--radius-sm)] border border-[var(--color-border)] px-4 py-2 text-[13px] font-medium uppercase tracking-[0.16em] text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-accent-soft)] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {planActionLoading === plan ? 'Updating...' : `Set ${getPlanLabel(plan)}`}
+                  </button>
+                ))}
+              </div>
+              {planActionMessage ? (
+                <p className="mt-4 text-[14px] text-[var(--color-text-secondary)]">{planActionMessage}</p>
+              ) : null}
+            </>
+          ) : (
+            <div className="mt-6 rounded-[var(--radius-sm)] border border-dashed border-[var(--color-border)] px-4 py-4 text-[14px] leading-7 text-[var(--color-text-secondary)]">
+              Add your email to the `UPAYIQ_ADMIN_EMAILS` environment variable to unlock one-click plan controls for this account.
+            </div>
+          )}
         </section>
       </div>
     </div>

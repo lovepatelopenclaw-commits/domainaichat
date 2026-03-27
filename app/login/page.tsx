@@ -22,13 +22,13 @@ function LoginContent() {
   const [error, setError] = useState('');
   const router = useRouter();
   const searchParams = useSearchParams();
+  const firebaseUnavailable = !auth || !isFirebaseClientConfigured;
 
   const authError = searchParams.get('error');
   const next = searchParams.get('next') || '/chat';
 
   useEffect(() => {
     if (!auth) {
-      setError(FIREBASE_UNAVAILABLE_MESSAGE);
       return;
     }
 
@@ -169,17 +169,19 @@ function LoginContent() {
               </p>
             </div>
 
-            {error || authError ? (
+            {error || authError || firebaseUnavailable ? (
               <div className="mb-5 flex items-start gap-2 rounded-[var(--radius-sm)] border border-[#f3d5d5] bg-[#fff5f5] px-3 py-3 text-[13px] text-[#b42318]">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>{error || 'Authentication failed. Please try again.'}</span>
+                <span>
+                  {error || (firebaseUnavailable ? FIREBASE_UNAVAILABLE_MESSAGE : 'Authentication failed. Please try again.')}
+                </span>
               </div>
             ) : null}
 
             <button
               type="button"
               onClick={handleGoogleLogin}
-              disabled={googleLoading || !isFirebaseClientConfigured}
+              disabled={googleLoading || firebaseUnavailable}
               className="inline-flex h-11 w-full items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-white px-4 text-[14px] font-medium text-[var(--color-text-primary)] transition-colors hover:bg-[var(--color-accent-soft)] disabled:opacity-60"
             >
               {googleLoading ? (
@@ -239,7 +241,7 @@ function LoginContent() {
 
               <button
                 type="submit"
-                disabled={loading || !isFirebaseClientConfigured}
+                disabled={loading || firebaseUnavailable}
                 className="inline-flex h-11 w-full items-center justify-center rounded-[var(--radius-sm)] bg-[var(--color-text-primary)] px-4 text-[14px] font-medium text-white transition-colors hover:bg-[var(--color-accent)] disabled:opacity-60"
               >
                 {loading ? 'Signing in...' : 'Sign in'}

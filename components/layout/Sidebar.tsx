@@ -112,11 +112,14 @@ export function Sidebar({
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 items-start gap-3">
               {workspace?.branding.logoUrl ? (
-                <img
-                  src={workspace.branding.logoUrl}
-                  alt={brandName}
-                  className="h-8 w-8 object-contain"
-                />
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={workspace.branding.logoUrl}
+                    alt={brandName}
+                    className="h-8 w-8 object-contain"
+                  />
+                </>
               ) : (
                 <BrandMark size={32} />
               )}

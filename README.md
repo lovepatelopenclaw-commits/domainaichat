@@ -18,6 +18,7 @@ NEXT_PUBLIC_FIREBASE_APP_ID=
 FIREBASE_ADMIN_CLIENT_EMAIL=
 FIREBASE_ADMIN_PRIVATE_KEY=
 NEXT_PUBLIC_APP_URL=https://upayiq.tech
+UPAYIQ_ADMIN_EMAILS=founder@example.com
 ```
 
 Enable Firebase Authentication, Firestore, and Google sign-in in your Firebase project before testing authenticated flows.
