@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DOMAINS } from '@/lib/domains';
 import { getAdminDb } from '@/lib/firebase-admin';
+import { getDomainSystemPrompt } from '@/lib/server-domains';
 import { streamChat } from '@/lib/ai';
 import { getTwilioWhatsappNumber } from '@/lib/twilio';
 import {
@@ -87,7 +88,7 @@ async function buildAnswer(
     messages: [...history, { content: body, role: 'user' }],
     systemPrompt: whiteLabelConfig
       ? buildWhiteLabelSystemPrompt(whiteLabelConfig, desk)
-      : DOMAINS[desk].systemPrompt,
+      : getDomainSystemPrompt(desk),
     documentContext: knowledgeBaseContext || undefined,
   });
 

@@ -10,6 +10,7 @@ import { generateFollowUpQuestions, streamChat } from '@/lib/ai';
 import { DOMAINS } from '@/lib/domains';
 import { getProtectedIdentityResponse } from '@/lib/identity-response';
 import { verifyRequestUser } from '@/lib/server-auth';
+import { getDomainSystemPrompt } from '@/lib/server-domains';
 import { isUsageExceeded } from '@/lib/usage';
 import {
   buildWhiteLabelSystemPrompt,
@@ -162,7 +163,7 @@ export async function POST(req: NextRequest) {
       content: m.content,
     }));
     const protectedIdentityResponse = getProtectedIdentityResponse(lastUserMessage.content);
-    let systemPrompt = domainConfig.systemPrompt;
+    let systemPrompt = getDomainSystemPrompt(domain);
     let combinedDocumentContext = documentContext?.trim() || '';
 
     if (workspaceToken?.trim()) {

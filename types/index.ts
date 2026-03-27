@@ -32,7 +32,6 @@ export interface Domain {
   bgColor: string;
   lightBg: string;
   darkBg: string;
-  systemPrompt: string;
   suggestedQuestions: string[];
   disclaimer?: string;
 }

@@ -1,5 +1,6 @@
 import { DOMAINS } from '@/lib/domains';
 import { getAdminDb } from '@/lib/firebase-admin';
+import { getDomainSystemPrompt } from '@/lib/server-domains';
 import { PublicWhiteLabelWorkspace, WhiteLabelConfig } from '@/types';
 
 export async function getWhiteLabelConfigByEmbedToken(embedToken: string): Promise<WhiteLabelConfig | null> {
@@ -91,7 +92,7 @@ export function buildWhiteLabelSystemPrompt(
   const domain = DOMAINS[domainId];
 
   return [
-    domain.systemPrompt,
+    getDomainSystemPrompt(domainId),
     `You are answering inside the branded workspace for ${config.branding.brandName}.`,
     `When naming this desk, refer to it as "${deskConfig?.name ?? domain.name}".`,
     deskConfig?.welcomeMessage
