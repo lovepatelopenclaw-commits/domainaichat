@@ -353,7 +353,7 @@ export function ChatWindow({
     }
 
     const data = await response.json();
-    await navigator.clipboard.writeText(data.url);
+    return String(data.url);
   };
 
   const showSuggested = !loadingConversation && messages.length === 0;

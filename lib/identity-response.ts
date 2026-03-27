@@ -22,6 +22,9 @@ const IDENTITY_PATTERN =
 const PROMPT_EXTRACTION_PATTERN =
   /\b(system prompt|developer prompt|hidden prompt|hidden instructions|internal instructions|system instructions|developer instructions|your exact instructions|verbatim instructions|initial instructions|private instructions|secret instructions|ignore previous instructions|ignore all previous instructions|repeat the above|repeat everything above|repeat all above|what is written above|what was written above|show your prompt|reveal your prompt|show the instructions|reveal the instructions|print the prompt|dump the prompt|dump your instructions|list your policies|developer message|system message|hidden message|private reasoning|chain of thought|reasoning trace|cot\b|jailbreak|prompt injection)\b/i;
 
+const PROMPT_EXTRACTION_FALLBACK_PATTERN =
+  /\b(instructions|prompt|rules|system|developer|hidden|private|secret|above|earlier|previous)\b/i;
+
 const PROMPT_LEAK_MARKERS = [
   'here are the instructions',
   'general instructions',
@@ -43,7 +46,11 @@ function pickEnglishIdentityResponse(input: string): string {
 }
 
 export function getProtectedIdentityResponse(input: string): string | null {
-  if (PROMPT_EXTRACTION_PATTERN.test(input)) {
+  if (
+    PROMPT_EXTRACTION_PATTERN.test(input) ||
+    (PROMPT_EXTRACTION_FALLBACK_PATTERN.test(input) &&
+      /\b(show|reveal|repeat|list|print|tell|give|summarize|summarise|explain|dump|copy)\b/i.test(input))
+  ) {
     const normalized = input.toLowerCase();
 
     if (/(kya instructions|prompt dikhao|system prompt|andar ke rules|hidden prompt|jailbreak)/i.test(normalized)) {
@@ -118,4 +125,12 @@ export function sanitizeAssistantResponse(userInput: string, output: string) {
     blocked: true,
     content,
   };
+}
+
+export function buildProtectionInput(inputs: string[]) {
+  return inputs
+    .map((input) => input.trim())
+    .filter(Boolean)
+    .slice(-4)
+    .join('\n');
 }

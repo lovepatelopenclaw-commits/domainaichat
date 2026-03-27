@@ -9,6 +9,7 @@ import {
 import { generateFollowUpQuestions, streamChat } from '@/lib/ai';
 import { DOMAINS } from '@/lib/domains';
 import {
+  buildProtectionInput,
   getProtectedIdentityResponse,
   sanitizeAssistantResponse,
 } from '@/lib/identity-response';
@@ -165,7 +166,10 @@ export async function POST(req: NextRequest) {
       role: m.role as 'user' | 'assistant' | 'system',
       content: m.content,
     }));
-    const protectedIdentityResponse = getProtectedIdentityResponse(lastUserMessage.content);
+    const protectionInput = buildProtectionInput(
+      messages.filter((message) => message.role === 'user').map((message) => message.content)
+    );
+    const protectedIdentityResponse = getProtectedIdentityResponse(protectionInput);
     let systemPrompt = getDomainSystemPrompt(domain);
     let combinedDocumentContext = documentContext?.trim() || '';
 
@@ -238,7 +242,7 @@ export async function POST(req: NextRequest) {
           }
 
           const protectedResponse = sanitizeAssistantResponse(
-            lastUserMessage.content,
+            protectionInput,
             fullResponse
           );
           fullResponse = protectedResponse.content;

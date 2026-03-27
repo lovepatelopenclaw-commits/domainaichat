@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DOMAINS } from '@/lib/domains';
 import { getAdminDb } from '@/lib/firebase-admin';
-import { sanitizeAssistantResponse } from '@/lib/identity-response';
+import {
+  buildProtectionInput,
+  sanitizeAssistantResponse,
+} from '@/lib/identity-response';
 import { getDomainSystemPrompt } from '@/lib/server-domains';
 import { streamChat } from '@/lib/ai';
 import { getTwilioWhatsappNumber } from '@/lib/twilio';
@@ -99,7 +102,10 @@ async function buildAnswer(
     fullAnswer += chunk.choices[0]?.delta?.content || '';
   }
 
-  const protectedResponse = sanitizeAssistantResponse(body, fullAnswer);
+  const protectionInput = buildProtectionInput(
+    [...history.map((message) => message.content), body]
+  );
+  const protectedResponse = sanitizeAssistantResponse(protectionInput, fullAnswer);
   const formattedAnswer = buildWhatsappMessage(protectedResponse.content, desk);
 
   await threadRef.add({
