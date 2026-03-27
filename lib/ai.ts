@@ -1,19 +1,5 @@
 import OpenAI from 'openai';
 
-const openRouterClient = new OpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY!,
-  baseURL: 'https://openrouter.ai/api/v1',
-  defaultHeaders: {
-    'HTTP-Referer': 'https://vyarah.com',
-    'X-Title': 'Vyarah AI HelpDesk',
-  },
-});
-
-const nvidiaClient = new OpenAI({
-  apiKey: process.env.NVIDIA_NIM_API_KEY!,
-  baseURL: 'https://integrate.api.nvidia.com/v1',
-});
-
 const OPENROUTER_MODEL = 'nvidia/llama-3.3-nemotron-super-49b-v1.5';
 const NVIDIA_MODEL = 'nvidia/llama-3.1-nemotron-70b-instruct';
 const CHAT_TEMPERATURE = 0.2;
@@ -28,6 +14,36 @@ interface StreamChatOptions {
   messages: AIMessage[];
   systemPrompt: string;
   documentContext?: string;
+}
+
+function getOpenRouterClient() {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+
+  if (!apiKey) {
+    return null;
+  }
+
+  return new OpenAI({
+    apiKey,
+    baseURL: 'https://openrouter.ai/api/v1',
+    defaultHeaders: {
+      'HTTP-Referer': 'https://vyarah.com',
+      'X-Title': 'Vyarah AI HelpDesk',
+    },
+  });
+}
+
+function getNvidiaClient() {
+  const apiKey = process.env.NVIDIA_NIM_API_KEY;
+
+  if (!apiKey) {
+    return null;
+  }
+
+  return new OpenAI({
+    apiKey,
+    baseURL: 'https://integrate.api.nvidia.com/v1',
+  });
 }
 
 function buildMessages({
@@ -52,18 +68,26 @@ function buildMessages({
 }
 
 async function createStream(messages: AIMessage[]) {
-  try {
-    const stream = await openRouterClient.chat.completions.create({
-      model: OPENROUTER_MODEL,
-      stream: true,
-      messages,
-      max_tokens: 1500,
-      reasoning_effort: 'none',
-      temperature: CHAT_TEMPERATURE,
-    });
+  const openRouterClient = getOpenRouterClient();
 
-    return { provider: 'openrouter' as const, stream };
-  } catch {
+  if (openRouterClient) {
+    try {
+      const stream = await openRouterClient.chat.completions.create({
+        model: OPENROUTER_MODEL,
+        stream: true,
+        messages,
+        max_tokens: 1500,
+        reasoning_effort: 'none',
+        temperature: CHAT_TEMPERATURE,
+      });
+
+      return { provider: 'openrouter' as const, stream };
+    } catch {}
+  }
+
+  const nvidiaClient = getNvidiaClient();
+
+  if (nvidiaClient) {
     try {
       const stream = await nvidiaClient.chat.completions.create({
         model: NVIDIA_MODEL,
@@ -74,22 +98,30 @@ async function createStream(messages: AIMessage[]) {
       });
 
       return { provider: 'nvidia' as const, stream };
-    } catch {
-      throw new Error('AI_UNAVAILABLE');
-    }
+    } catch {}
   }
+
+  throw new Error('AI_UNAVAILABLE');
 }
 
 async function createCompletion(messages: AIMessage[]) {
-  try {
-    return await openRouterClient.chat.completions.create({
-      model: OPENROUTER_MODEL,
-      messages,
-      max_tokens: 256,
-      reasoning_effort: 'none',
-      temperature: FOLLOW_UP_TEMPERATURE,
-    });
-  } catch {
+  const openRouterClient = getOpenRouterClient();
+
+  if (openRouterClient) {
+    try {
+      return await openRouterClient.chat.completions.create({
+        model: OPENROUTER_MODEL,
+        messages,
+        max_tokens: 256,
+        reasoning_effort: 'none',
+        temperature: FOLLOW_UP_TEMPERATURE,
+      });
+    } catch {}
+  }
+
+  const nvidiaClient = getNvidiaClient();
+
+  if (nvidiaClient) {
     return nvidiaClient.chat.completions.create({
       model: NVIDIA_MODEL,
       messages,
@@ -97,6 +129,8 @@ async function createCompletion(messages: AIMessage[]) {
       temperature: FOLLOW_UP_TEMPERATURE,
     });
   }
+
+  throw new Error('AI_UNAVAILABLE');
 }
 
 export async function streamChat(options: StreamChatOptions) {
