@@ -56,7 +56,7 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
     description,
     openGraph: {
       description,
-      images: ['/vyarah-logo.png'],
+      images: ['/opengraph-image'],
       title,
       type: 'article',
     },
@@ -64,7 +64,7 @@ export async function generateMetadata({ params }: SharePageProps): Promise<Meta
     twitter: {
       card: 'summary_large_image',
       description,
-      images: ['/vyarah-logo.png'],
+      images: ['/opengraph-image'],
       title,
     },
   };

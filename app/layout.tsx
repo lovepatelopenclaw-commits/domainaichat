@@ -4,6 +4,7 @@ import './globals.css';
 import { Navbar } from '@/components/layout/Navbar';
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { getBaseAppUrl } from '@/lib/app-url';
+import { SITE_DESCRIPTION, SITE_KEYWORDS, SITE_NAME, SITE_TITLE } from '@/lib/seo';
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -21,25 +22,47 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  applicationName: 'Vyarah AI BuildDesk',
-  description:
-    'Get instant expert answers on tax, legal, medical, real estate and finance from Vyarah AI BuildDesk.',
+  applicationName: SITE_NAME,
+  alternates: {
+    canonical: '/',
+  },
+  category: 'technology',
+  description: SITE_DESCRIPTION,
   icons: {
     apple: '/vyarah-logo.png',
     icon: '/vyarah-logo.png',
   },
-  keywords: [
-    'Vyarah AI',
-    'India tax help',
-    'legal guidance India',
-    'medical answers India',
-    'real estate help India',
-    'finance guidance India',
-  ],
+  keywords: SITE_KEYWORDS,
   metadataBase: new URL(getBaseAppUrl()),
+  openGraph: {
+    description: SITE_DESCRIPTION,
+    images: ['/opengraph-image'],
+    locale: 'en_IN',
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    type: 'website',
+    url: getBaseAppUrl(),
+  },
+  robots: {
+    follow: true,
+    googleBot: {
+      follow: true,
+      index: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+    index: true,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    description: SITE_DESCRIPTION,
+    images: ['/opengraph-image'],
+    title: SITE_TITLE,
+  },
   title: {
-    default: 'Vyarah AI BuildDesk',
-    template: '%s | Vyarah AI BuildDesk',
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
   },
 };
 

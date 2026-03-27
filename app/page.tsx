@@ -1,5 +1,8 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { DOMAIN_LIST } from '@/lib/domains';
+import { getBaseAppUrl } from '@/lib/app-url';
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE } from '@/lib/seo';
 
 const echoLayers = [
   { color: '#bfbfbf', offset: '-0.04em' },
@@ -45,6 +48,19 @@ const workflow = [
     value: 'Use a suggested follow-up instead of reformulating the whole issue from scratch.',
   },
 ];
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: '/',
+  },
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    description: SITE_DESCRIPTION,
+    title: SITE_TITLE,
+    url: getBaseAppUrl(),
+  },
+  title: SITE_NAME,
+};
 
 function EchoWord({ word }: { word: string }) {
   return (
@@ -220,7 +236,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1360px] px-4 py-14 sm:px-6 sm:py-20">
+      <section id="desks" className="mx-auto max-w-[1360px] px-4 py-14 sm:px-6 sm:py-20">
         <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr]">
           <div>
             <p className="eyebrow-label">Desk Index</p>
@@ -267,7 +283,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-y border-[var(--color-border)] bg-white/26">
+      <section id="how-it-works" className="border-y border-[var(--color-border)] bg-white/26">
         <div className="mx-auto max-w-[1360px] px-4 py-14 sm:px-6 sm:py-20">
           <div className="grid gap-10 lg:grid-cols-[0.78fr_1.22fr]">
             <div>
@@ -300,7 +316,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1360px] px-4 py-14 sm:px-6 sm:py-20">
+      <section id="workflow" className="mx-auto max-w-[1360px] px-4 py-14 sm:px-6 sm:py-20">
         <div className="grid gap-8 xl:grid-cols-[1.04fr_0.96fr]">
           <div className="swiss-panel p-6 sm:p-8">
             <p className="eyebrow-label">Typical workflow</p>

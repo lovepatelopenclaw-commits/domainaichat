@@ -17,9 +17,10 @@ export function Navbar() {
   }
 
   const navLinks = [
+    { href: '/#desks', label: 'Desks' },
     { href: '/#how-it-works', label: 'How it works' },
     { href: '/pricing', label: 'Pricing' },
-    { href: '/#blog', label: 'Blog' },
+    { href: '/#workflow', label: 'Workflow' },
   ];
 
   return (

@@ -100,12 +100,13 @@ export function MessageBubble({
           </div>
 
           {!isStreaming && message.content ? (
-            <div className="mt-3 flex justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+            <div className="mt-3 flex justify-end gap-2 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
               {onShare ? (
                 <button
                   type="button"
                   title="Copy shareable link"
-                  className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1 text-[12px] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-text-primary)]"
+                  aria-label="Copy shareable link"
+                  className="inline-flex min-h-9 items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--color-border)] px-2 py-1 text-[12px] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-text-primary)]"
                   onClick={handleShare}
                 >
                   {shareCopied ? (
@@ -123,7 +124,9 @@ export function MessageBubble({
               ) : null}
               <button
                 type="button"
-                className="inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-2 py-1 text-[12px] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-text-primary)]"
+                title="Copy answer"
+                aria-label="Copy answer"
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--color-border)] px-2 py-1 text-[12px] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-text-primary)]"
                 onClick={handleCopy}
               >
                 {copied ? (
