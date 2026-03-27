@@ -35,7 +35,7 @@ export function MessageBubble({
   if (isUser) {
     return (
       <div className="animate-message-in flex justify-end">
-        <div className="max-w-[min(84%,42rem)]">
+        <div className="w-full max-w-full sm:max-w-[min(84%,42rem)]">
           <div className="rounded-[12px] rounded-br-[2px] bg-[var(--color-text-primary)] px-4 py-3 text-white shadow-[var(--shadow-subtle)]">
             <p className="whitespace-pre-wrap text-[15px] leading-6">{message.content}</p>
           </div>
@@ -46,7 +46,7 @@ export function MessageBubble({
 
   return (
     <div className="animate-message-in group flex justify-start">
-      <div className="max-w-[min(100%,56rem)]">
+      <div className="w-full max-w-full sm:max-w-[min(100%,56rem)]">
         <div className="mb-1.5 flex items-center gap-2 pl-0.5">
           <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
             Vyarah AI

@@ -77,14 +77,21 @@ export function Navbar() {
 
           <Link
             href="/chat"
-            className="swiss-button hidden px-5 py-2 text-[13px] font-medium uppercase tracking-[0.16em] md:inline-flex"
+            className="swiss-button hidden min-h-11 px-5 py-2 text-[13px] font-medium uppercase tracking-[0.16em] md:inline-flex"
           >
             {user ? 'Open BuildDesk' : 'Start Free'}
           </Link>
 
+          <Link
+            href="/chat"
+            className="swiss-button min-h-11 px-3 py-2 text-[11px] font-medium uppercase tracking-[0.16em] md:hidden"
+          >
+            Start Free
+          </Link>
+
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center border border-[var(--color-border)] bg-[rgba(255,255,255,0.4)] text-[var(--color-text-primary)] md:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center border border-[var(--color-border)] bg-[rgba(255,255,255,0.4)] text-[var(--color-text-primary)] md:hidden"
             onClick={() => setMobileOpen((current) => !current)}
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -128,14 +135,14 @@ export function Navbar() {
               <Link
                 href="/login"
                 onClick={() => setMobileOpen(false)}
-                className="inline-flex border border-[var(--color-border)] px-3 py-2 text-[13px] font-medium uppercase tracking-[0.16em] text-[var(--color-text-primary)]"
+                className="inline-flex min-h-11 items-center border border-[var(--color-border)] px-3 py-2 text-[13px] font-medium uppercase tracking-[0.16em] text-[var(--color-text-primary)]"
               >
                 Login
               </Link>
               <Link
                 href="/chat"
                 onClick={() => setMobileOpen(false)}
-                className="swiss-button px-4 py-2 text-[13px] font-medium uppercase tracking-[0.16em]"
+                className="swiss-button min-h-11 px-4 py-2 text-[13px] font-medium uppercase tracking-[0.16em]"
               >
                 Start Free
               </Link>

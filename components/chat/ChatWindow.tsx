@@ -322,7 +322,10 @@ export function ChatWindow({
         </div>
       </div>
 
-      <div className="border-t border-[var(--color-border)] bg-[rgba(242,242,242,0.94)] px-3 py-3 backdrop-blur-md sm:px-6 sm:py-4">
+      <div
+        className="sticky bottom-0 border-t border-[var(--color-border)] bg-[rgba(242,242,242,0.94)] px-3 py-3 backdrop-blur-md sm:px-6 sm:py-4"
+        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+      >
         <div className="mx-auto max-w-[980px]">
           <InputBar
             onSend={sendMessage}

@@ -233,12 +233,12 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid gap-px bg-[var(--color-border)] md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-px bg-[var(--color-border)] xl:grid-cols-3">
             {DOMAIN_LIST.map((domain, index) => (
               <Link
                 key={domain.id}
                 href="/chat"
-                className="interactive-card flex min-h-[220px] flex-col justify-between bg-[var(--color-bg)] p-6"
+                className="interactive-card flex min-h-[220px] flex-col justify-between bg-[var(--color-bg)] p-4 sm:p-6"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="font-display text-[30px] leading-none tracking-[-0.05em] text-[var(--gray-depth-1)]">
@@ -250,10 +250,10 @@ export default function HomePage() {
                 </div>
 
                 <div className="mt-8">
-                  <h3 className="font-display text-[28px] leading-[0.95] tracking-[-0.05em]">
+                  <h3 className="font-display text-[22px] leading-[0.95] tracking-[-0.05em] sm:text-[28px]">
                     {domain.name}
                   </h3>
-                  <p className="mt-4 text-[14px] leading-7 text-[var(--color-text-secondary)]">
+                  <p className="mt-4 text-[14px] leading-6 text-[var(--color-text-secondary)]">
                     {domain.suggestedQuestions[0]}
                   </p>
                 </div>
