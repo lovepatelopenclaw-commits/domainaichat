@@ -8,7 +8,10 @@ import {
 } from '@/lib/firestore-admin';
 import { generateFollowUpQuestions, streamChat } from '@/lib/ai';
 import { DOMAINS } from '@/lib/domains';
-import { getProtectedIdentityResponse } from '@/lib/identity-response';
+import {
+  getProtectedIdentityResponse,
+  sanitizeAssistantResponse,
+} from '@/lib/identity-response';
 import { verifyRequestUser } from '@/lib/server-auth';
 import { getDomainSystemPrompt } from '@/lib/server-domains';
 import { isUsageExceeded } from '@/lib/usage';
@@ -225,15 +228,23 @@ export async function POST(req: NextRequest) {
           let fullResponse = '';
           if (protectedIdentityResponse) {
             fullResponse = protectedIdentityResponse;
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: fullResponse })}\n\n`));
           } else if (stream) {
             for await (const chunk of stream) {
               const content = chunk.choices[0]?.delta?.content || '';
               if (content) {
                 fullResponse += content;
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`));
               }
             }
+          }
+
+          const protectedResponse = sanitizeAssistantResponse(
+            lastUserMessage.content,
+            fullResponse
+          );
+          fullResponse = protectedResponse.content;
+
+          if (fullResponse) {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: fullResponse })}\n\n`));
           }
 
           // Generate follow-up questions
@@ -258,7 +269,7 @@ export async function POST(req: NextRequest) {
               );
             }
 
-            const followUps = protectedIdentityResponse
+            const followUps = protectedIdentityResponse || protectedResponse.blocked
               ? []
               : await generateFollowUpQuestions(domainConfig.name, fullResponse);
             controller.enqueue(
