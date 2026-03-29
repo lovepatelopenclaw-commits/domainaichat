@@ -11,7 +11,7 @@ export function getBaseAppUrl() {
     return `https://${vercelUrl.replace(/\/$/, '')}`;
   }
 
-  return 'https://upayiq.tech';
+  return 'https://vyarah.com';
 }
 
 export function getShareUrl(shareId: string) {

@@ -9,7 +9,6 @@ import { fetchWithAuth } from '@/lib/client-api';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { EmptyState } from './EmptyState';
 import { InputBar } from './InputBar';
-import { BusinessUpsellBanner } from './BusinessUpsellBanner';
 import { MessageBubble } from './MessageBubble';
 import { SoftLeadPrompt } from './SoftLeadPrompt';
 import { SuggestedQuestions } from './SuggestedQuestions';
@@ -49,13 +48,6 @@ export function ChatWindow({
   const domainConfig = DOMAINS[domain];
   const domainVisual = getDomainVisual(domain);
   const { user } = useAuth();
-  const lastCompletedAssistantIndex = messages.reduce((lastIndex, message, index) => {
-    if (message.role === 'assistant' && message.content.trim().length > 0) {
-      return index;
-    }
-
-    return lastIndex;
-  }, -1);
 
   useEffect(() => {
     setCurrentConversationId(conversationId);
@@ -388,36 +380,24 @@ export function ChatWindow({
                   {welcomeMessage}
                 </div>
               ) : null}
-              {messages.map((message, index) => {
-                const isCurrentStreamingMessage =
-                  isStreaming &&
-                  message.id === messages[messages.length - 1]?.id &&
-                  message.role === 'assistant';
-
-                return (
-                  <div key={message.id} className="space-y-3">
-                    <MessageBubble
-                      message={message}
-                      domainColor={domainVisual.color}
-                      domainName={domainConfig.name}
-                      isStreaming={isCurrentStreamingMessage}
-                      onShare={
-                        message.role === 'assistant' && message.content.trim()
-                          ? () => handleShare(message.id)
-                          : undefined
-                      }
-                    />
-
-                    {domain === 'business' &&
-                    message.role === 'assistant' &&
-                    message.content.trim() &&
-                    index === lastCompletedAssistantIndex &&
-                    !isCurrentStreamingMessage ? (
-                      <BusinessUpsellBanner />
-                    ) : null}
-                  </div>
-                );
-              })}
+              {messages.map((message) => (
+                <MessageBubble
+                  key={message.id}
+                  message={message}
+                  domainColor={domainVisual.color}
+                  domainName={domainConfig.name}
+                  isStreaming={
+                    isStreaming &&
+                    message.id === messages[messages.length - 1]?.id &&
+                    message.role === 'assistant'
+                  }
+                  onShare={
+                    message.role === 'assistant' && message.content.trim()
+                      ? () => handleShare(message.id)
+                      : undefined
+                  }
+                />
+              ))}
 
               {softLeadState === 'prompt' ? (
                 <SoftLeadPrompt

@@ -79,13 +79,13 @@ export default function OpenGraphImage() {
             </div>
             <div
               style={{
-              display: 'flex',
-              fontSize: 26,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-            }}
-          >
-              upayiq.tech
+                display: 'flex',
+                fontSize: 26,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+              }}
+            >
+              vyarah.com
             </div>
           </div>
         </div>

@@ -5,7 +5,7 @@ export default function ChatPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-0 flex-1 items-center justify-center bg-[var(--color-bg)] text-[14px] text-[var(--color-text-secondary)]">
+        <div className="flex min-h-[100dvh] items-center justify-center bg-[var(--color-bg)] text-[14px] text-[var(--color-text-secondary)]">
           Loading chat...
         </div>
       }

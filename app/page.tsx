@@ -2,8 +2,6 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { DOMAIN_LIST } from '@/lib/domains';
 import { getBaseAppUrl } from '@/lib/app-url';
-import { serializeJsonLd } from '@/lib/json-ld';
-import { PUBLIC_PLAN_OFFERS, PRICING_FAQS } from '@/lib/pricing';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE } from '@/lib/seo';
 
 const echoLayers = [
@@ -48,34 +46,6 @@ const workflow = [
   {
     label: 'Next move',
     value: 'Use a suggested follow-up instead of reformulating the whole issue from scratch.',
-  },
-];
-
-const stats = [
-  ['500+', 'questions answered'],
-  ['6', 'expert desks'],
-  ['Free to start', 'no card required'],
-];
-
-// TODO: Replace with real testimonials before major launch.
-const testimonials = [
-  {
-    quote:
-      'I used to spend 30 minutes explaining my situation to my CA before every meeting. Now I use BuildDesk first to understand the basics, then the meeting takes 10 minutes.',
-    person: 'Rohan S.',
-    role: 'Freelance Consultant, Mumbai',
-  },
-  {
-    quote:
-      'My landlord refused to return my deposit. BuildDesk told me exactly what documents to collect and what to say. Got the money back in 3 weeks.',
-    person: 'Priya M.',
-    role: 'Software Engineer, Bangalore',
-  },
-  {
-    quote:
-      'As a CA I use the tax desk to quickly verify my understanding on edge cases. It is faster than searching through circulars.',
-    person: 'Amit T.',
-    role: 'Chartered Accountant, Ahmedabad',
   },
 ];
 
@@ -201,74 +171,8 @@ function ProductPreview() {
 }
 
 export default function HomePage() {
-  const baseUrl = getBaseAppUrl();
-  const homepageSchemas = [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'Organization',
-      name: SITE_NAME,
-      url: baseUrl,
-      description: SITE_DESCRIPTION,
-      sameAs: ['https://www.vyarah.com'],
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'WebApplication',
-      applicationCategory: 'BusinessApplication',
-      description: SITE_DESCRIPTION,
-      featureList: [
-        '6 expert desks for Indian professional questions',
-        'Free guest sessions with no card required',
-        'Structured AI answers with follow-up suggestions',
-        'Saved conversations for signed-in users',
-        'File uploads on paid plans',
-        'White-label branded helpdesk workflows',
-      ],
-      isAccessibleForFree: true,
-      name: SITE_NAME,
-      offers: PUBLIC_PLAN_OFFERS.map((offer) => ({
-        '@type': 'Offer',
-        availability: 'https://schema.org/InStock',
-        category: offer.category,
-        name: offer.name,
-        price: offer.price,
-        priceCurrency: offer.priceCurrency,
-        url: offer.name === 'White-Label' ? `${baseUrl}/white-label` : `${baseUrl}/pricing`,
-        ...(offer.unitText
-          ? {
-              priceSpecification: {
-                '@type': 'UnitPriceSpecification',
-                price: offer.price,
-                priceCurrency: offer.priceCurrency,
-                unitText: offer.unitText,
-              },
-            }
-          : {}),
-      })),
-      operatingSystem: 'Web',
-      url: baseUrl,
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
-      mainEntity: PRICING_FAQS.map((faq) => ({
-        '@type': 'Question',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: faq.answer,
-        },
-        name: faq.question,
-      })),
-    },
-  ];
-
   return (
     <div className="bg-[var(--color-bg)] text-[var(--color-text-primary)]">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: serializeJsonLd(homepageSchemas) }}
-      />
-
       <section className="border-b border-[var(--color-border)]">
         <div className="mx-auto max-w-[1360px] px-4 pb-14 pt-10 sm:px-6 sm:pb-20 sm:pt-16">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -310,24 +214,24 @@ export default function HomePage() {
                   </Link>
                 </div>
               </div>
+
+              <div className="mt-12 grid gap-px bg-[var(--color-border)] sm:grid-cols-3">
+                {[
+                  ['06', 'Expert desks'],
+                  ['Guest', 'Start without friction'],
+                  ['Saved', 'Keep continuity when signed in'],
+                ].map(([value, label]) => (
+                  <div key={label} className="bg-[var(--color-bg)] px-4 py-5">
+                    <div className="font-display text-[34px] leading-none tracking-[-0.05em]">{value}</div>
+                    <div className="mt-2 text-[12px] uppercase tracking-[0.2em] text-[var(--color-text-secondary)]">
+                      {label}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <ProductPreview />
-          </div>
-        </div>
-      </section>
-
-      <section className="border-b border-[var(--color-border)]">
-        <div className="mx-auto max-w-[1360px] px-4 py-8 sm:px-6 sm:py-10">
-          <div className="grid gap-px bg-[var(--color-border)] md:grid-cols-3">
-            {stats.map(([value, label]) => (
-              <div key={label} className="bg-[var(--color-bg)] px-4 py-5 sm:px-6">
-                <div className="font-display text-[32px] leading-none tracking-[-0.05em]">{value}</div>
-                <div className="mt-2 text-[12px] uppercase tracking-[0.18em] text-[var(--color-text-secondary)]">
-                  {label}
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -408,40 +312,6 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-[1360px] px-4 py-14 sm:px-6 sm:py-20">
-        <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr]">
-          <div>
-            <p className="eyebrow-label">Testimonials</p>
-            <h2 className="mt-3 max-w-[12ch] font-display text-[42px] leading-[0.92] tracking-[-0.05em]">
-              Trusted in the moments that matter.
-            </h2>
-            <p className="mt-5 max-w-[30rem] text-[15px] leading-7 text-[var(--color-text-secondary)]">
-              These are placeholder stories for now, but they reflect the kinds of questions BuildDesk is already built
-              to handle.
-            </p>
-          </div>
-
-          <div className="grid gap-px bg-[var(--color-border)]">
-            {testimonials.map((testimonial, index) => (
-              <blockquote
-                key={testimonial.person}
-                className={index === 1 ? 'bg-[#111111] px-6 py-6 text-[#f2f2f2]' : 'bg-[var(--color-bg)] px-6 py-6'}
-              >
-                <p className={`text-[16px] leading-8 ${index === 1 ? 'text-[#f2f2f2]' : 'text-[var(--color-text-primary)]'}`}>
-                  "{testimonial.quote}"
-                </p>
-                <footer className={`mt-5 text-[13px] uppercase tracking-[0.16em] ${index === 1 ? 'text-[#bfbfbf]' : 'text-[var(--color-text-secondary)]'}`}>
-                  {testimonial.person}
-                  <span className="block mt-2 normal-case tracking-normal text-[14px] leading-7">
-                    {testimonial.role}
-                  </span>
-                </footer>
-              </blockquote>
-            ))}
           </div>
         </div>
       </section>
