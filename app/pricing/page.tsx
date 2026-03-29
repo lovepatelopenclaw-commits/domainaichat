@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { PRICING_FAQS } from '@/lib/pricing';
 
 type BillingCycle = 'monthly' | 'yearly';
 
@@ -81,7 +82,7 @@ const plans: Plan[] = [
     name: 'White-Label',
     eyebrow: 'Firms wanting their own branded version',
     description: 'A branded BuildDesk instance with its own workflow, appearance, and support model.',
-    ctaHref: '/signup',
+    ctaHref: '/white-label',
     ctaLabel: 'Request a Demo',
     monthlyPrice: null,
     customPrice: 'Custom pricing',
@@ -91,25 +92,6 @@ const plans: Plan[] = [
       'Unlimited users',
       'Priority SLA',
     ],
-  },
-];
-
-const faqs = [
-  {
-    question: 'Can I switch plans anytime?',
-    answer: 'Yes. You can move between plans as your workflow changes, and the product is designed to scale up without forcing a new interface.',
-  },
-  {
-    question: 'Is this a substitute for a CA or lawyer?',
-    answer: 'No. BuildDesk is meant to help you think, prepare, and structure questions faster, but important decisions should still be reviewed by a qualified professional.',
-  },
-  {
-    question: 'What is the white-label plan?',
-    answer: 'It is a branded version of BuildDesk for firms that want their own domain, identity, desk setup, and knowledge base under a client-facing experience.',
-  },
-  {
-    question: 'Is there an annual discount?',
-    answer: 'Yes. Switching to yearly billing applies a 20% discount across the paid plans.',
   },
 ];
 
@@ -327,7 +309,7 @@ export default function PricingPage() {
           </div>
 
           <div className="mt-8 grid gap-px bg-[var(--color-border)] md:grid-cols-2">
-            {faqs.map((faq) => (
+            {PRICING_FAQS.map((faq) => (
               <div key={faq.question} className="bg-[var(--color-bg)] p-6">
                 <h3 className="font-display text-[24px] leading-[0.96] tracking-[-0.05em]">
                   {faq.question}

@@ -18,6 +18,8 @@ export function Navbar() {
 
   const navLinks = [
     { href: '/#desks', label: 'Desks' },
+    { href: '/white-label', label: 'White-Label' },
+    { href: '/blog', label: 'Blog' },
     { href: '/#how-it-works', label: 'How it works' },
     { href: '/pricing', label: 'Pricing' },
     { href: '/#workflow', label: 'Workflow' },

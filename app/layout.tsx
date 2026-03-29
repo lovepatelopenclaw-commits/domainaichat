@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { DM_Sans, JetBrains_Mono, Space_Grotesk } from 'next/font/google';
 import './globals.css';
+import { AnalyticsScripts } from '@/components/analytics/AnalyticsScripts';
+import { Footer } from '@/components/layout/Footer';
 import { Navbar } from '@/components/layout/Navbar';
 import { AuthProvider } from '@/components/providers/AuthProvider';
 import { getBaseAppUrl } from '@/lib/app-url';
@@ -74,9 +76,11 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans antialiased">
+        <AnalyticsScripts />
         <AuthProvider>
           <Navbar />
           <main className="flex-1 flex flex-col">{children}</main>
+          <Footer />
         </AuthProvider>
       </body>
     </html>
